@@ -14,18 +14,18 @@ app = Flask(__name__)
 
 @app.route('/webhook', methods=['POST'])
 def webhook():
-    req = request.get_json(silent=True, force=True)
+	req = request.get_json(silent=True, force=True)
 
-    print("Request:")
-    print(json.dumps(req, indent=4))
+	print("Request:")
+	print(json.dumps(req, indent=4))
 
-    res = processRequest(req)
+	res = processRequest(req)
 
-    res = json.dumps(res, indent=4)
-    # print(res)
-    r = make_response(res)
-    r.headers['Content-Type'] = 'application/json'
-    return r
+	res = json.dumps(res, indent=4)
+	# print(res)
+	r = make_response(res)
+	r.headers['Content-Type'] = 'application/json'
+	return r
 
 
 def processRequest(req):
@@ -60,101 +60,101 @@ def processRequest(req):
 		return res
 		
 	else:
-        return {}
+		return {}
 
 
 def makeYqlQuery(req):
-    result = req.get("result")
-    parameters = result.get("parameters")
-    city = parameters.get("geo-city")
-    if city is None:
-        return None
+	result = req.get("result")
+	parameters = result.get("parameters")
+	city = parameters.get("geo-city")
+	if city is None:
+		return None
 
-    return "select * from weather.forecast where woeid in (select woeid from geo.places(1) where text='" + city + "')"
+	return "select * from weather.forecast where woeid in (select woeid from geo.places(1) where text='" + city + "')"
 
 
 def makeWalmartQuery(req):
-    result = req.get("result")
-    parameters = result.get("parameters")
-    query = parameters.get("q")
-    if query is None:
-        return None
+	result = req.get("result")
+	parameters = result.get("parameters")
+	query = parameters.get("q")
+	if query is None:
+		return None
 
-    return query
+	return query
 
 
 def makeYqlWebhookResult(data):
-    query = data.get('query')
-    if query is None:
-        return {}
+	query = data.get('query')
+	if query is None:
+		return {}
 
-    result = query.get('results')
-    if result is None:
-        return {}
+	result = query.get('results')
+	if result is None:
+		return {}
 
-    channel = result.get('channel')
-    if channel is None:
-        return {}
+	channel = result.get('channel')
+	if channel is None:
+		return {}
 
-    item = channel.get('item')
-    location = channel.get('location')
-    units = channel.get('units')
-    if (location is None) or (item is None) or (units is None):
-        return {}
+	item = channel.get('item')
+	location = channel.get('location')
+	units = channel.get('units')
+	if (location is None) or (item is None) or (units is None):
+		return {}
 
-    condition = item.get('condition')
-    if condition is None:
-        return {}
+	condition = item.get('condition')
+	if condition is None:
+		return {}
 
-    # print(json.dumps(item, indent=4))
+	# print(json.dumps(item, indent=4))
 
-    speech = "Today in " + location.get('city') + ": " + condition.get('text') + \
-             ", the temperature is " + condition.get('temp') + " " + units.get('temperature')
+	speech = "Today in " + location.get('city') + ": " + condition.get('text') + \
+			 ", the temperature is " + condition.get('temp') + " " + units.get('temperature')
 
-    print("Response:")
-    print(speech)
+	print("Response:")
+	print(speech)
 
-    return {
-        "speech": speech,
-        "displayText": speech,
-        # "data": data,
-        # "contextOut": [],
-        "source": "apiai-weather-webhook-sample-ga"
-    }
+	return {
+		"speech": speech,
+		"displayText": speech,
+		# "data": data,
+		# "contextOut": [],
+		"source": "apiai-weather-webhook-sample-ga"
+	}
 
 
 def makeWmWebhookResult(data):
-    item = data.get('item')[0]
-    if item is None:
-        return {}
+	item = data.get('item')[0]
+	if item is None:
+		return {}
 
-    name = item.get('name')
-    if name is None:
-        return {}
+	name = item.get('name')
+	if name is None:
+		return {}
 
-    price = item.get('price')
-    if price is None:
-        return {}
+	price = item.get('price')
+	if price is None:
+		return {}
 
-    # print(json.dumps(item, indent=4))
+	# print(json.dumps(item, indent=4))
 
-    speech = "I found " + item.get('name') + "at Walmart for " + item.get('price')
+	speech = "I found " + item.get('name') + "at Walmart for " + item.get('price')
 
-    print("Response:")
-    print(speech)
+	print("Response:")
+	print(speech)
 
-    return {
-        "speech": speech,
-        "displayText": speech,
-        # "data": data,
-        # "contextOut": [],
-        "source": "apiai-weather-webhook-sample-ga"
-    }
+	return {
+		"speech": speech,
+		"displayText": speech,
+		# "data": data,
+		# "contextOut": [],
+		"source": "apiai-weather-webhook-sample-ga"
+	}
 
 
 if __name__ == '__main__':
-    port = int(os.getenv('PORT', 5000))
+	port = int(os.getenv('PORT', 5000))
 
-    print "Starting app on port %d" % port
+	print "Starting app on port %d" % port
 
-    app.run(debug=False, port=port, host='0.0.0.0')
+	app.run(debug=False, port=port, host='0.0.0.0')
