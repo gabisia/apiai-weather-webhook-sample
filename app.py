@@ -29,21 +29,38 @@ def webhook():
 
 
 def processRequest(req):
-    if req.get("result").get("action") != "yahooWeatherForecast":
+    if req.get("result").get("action") == "shopping.search":
+		baseurl = "http://search.mobile.walmart.com/v1/browse/search?assetProtocol=normal&itemSource=All&sortBy=BESTSELLERS&spelling=false&"
+		wm_query = makeWalmartQuery(req)
+		if wm_query is None:
+			return {}
+		wm_url = baseurl + urllib.urlencode({'query': wm_query})
+	
+		print("wm_url:")
+		print(wm_url)
+	
+		result = urllib.urlopen(wm_url).read()
+		data = json.loads(result)
+		res = makeWmWebhookResult(data)
+		return res
+		
+	else if req.get("result").get("action") == "yahooWeatherForecast":
+		baseurl = "https://query.yahooapis.com/v1/public/yql?"
+		yql_query = makeYqlQuery(req)
+		if yql_query is None:
+			return {}
+		yql_url = baseurl + urllib.urlencode({'q': yql_query}) + "&format=json"
+	
+		print("yql_url:")
+		print(yql_url)
+	
+		result = urllib.urlopen(yql_url).read()
+		data = json.loads(result)
+		res = makeYqlWebhookResult(data)
+		return res
+		
+	else
         return {}
-    baseurl = "https://query.yahooapis.com/v1/public/yql?"
-    yql_query = makeYqlQuery(req)
-    if yql_query is None:
-        return {}
-    yql_url = baseurl + urllib.urlencode({'q': yql_query}) + "&format=json"
-    
-    print("YQL:")
-    print(yql_url)
-    
-    result = urllib.urlopen(yql_url).read()
-    data = json.loads(result)
-    res = makeWebhookResult(data)
-    return res
 
 
 def makeYqlQuery(req):
@@ -56,7 +73,17 @@ def makeYqlQuery(req):
     return "select * from weather.forecast where woeid in (select woeid from geo.places(1) where text='" + city + "')"
 
 
-def makeWebhookResult(data):
+def makeWalmartQuery(req):
+    result = req.get("result")
+    parameters = result.get("parameters")
+    query = parameters.get("q")
+    if query is None:
+        return None
+
+    return query
+
+
+def makeYqlWebhookResult(data):
     query = data.get('query')
     if query is None:
         return {}
@@ -92,7 +119,36 @@ def makeWebhookResult(data):
         "displayText": speech,
         # "data": data,
         # "contextOut": [],
-        "source": "apiai-weather-webhook-sample"
+        "source": "apiai-weather-webhook-sample-ga"
+    }
+
+
+def makeWmWebhookResult(data):
+    item = data.get('item')[0]
+    if item is None:
+        return {}
+
+    name = item.get('name')
+    if name is None:
+        return {}
+
+    price = item.get('price')
+    if price is None:
+        return {}
+
+    # print(json.dumps(item, indent=4))
+
+    speech = "I found " + item.get('name') + "at Walmart for " + item.get('price')
+
+    print("Response:")
+    print(speech)
+
+    return {
+        "speech": speech,
+        "displayText": speech,
+        # "data": data,
+        # "contextOut": [],
+        "source": "apiai-weather-webhook-sample-ga"
     }
 
 
