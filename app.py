@@ -29,22 +29,7 @@ def webhook():
 
 
 def processRequest(req):
-    if req.get("result").get("action") == "shopping.search":
-		baseurl = "http://search.mobile.walmart.com/v1/browse/search?assetProtocol=normal&itemSource=All&sortBy=BESTSELLERS&spelling=false&"
-		wm_query = makeWalmartQuery(req)
-		if wm_query is None:
-			return {}
-		wm_url = baseurl + urllib.urlencode({'query': wm_query})
-	
-		print("wm_url:")
-		print(wm_url)
-	
-		result = urllib.urlopen(wm_url).read()
-		data = json.loads(result)
-		res = makeWmWebhookResult(data)
-		return res
-		
-	elif req.get("result").get("action") == "yahooWeatherForecast":
+	if req.get("result").get("action") == "yahooWeatherForecast":
 		baseurl = "https://query.yahooapis.com/v1/public/yql?"
 		yql_query = makeYqlQuery(req)
 		if yql_query is None:
@@ -57,6 +42,21 @@ def processRequest(req):
 		result = urllib.urlopen(yql_url).read()
 		data = json.loads(result)
 		res = makeYqlWebhookResult(data)
+		return res
+
+	elif req.get("result").get("action") == "shopping.search":
+		baseurl = "http://search.mobile.walmart.com/v1/browse/search?assetProtocol=normal&itemSource=All&sortBy=BESTSELLERS&spelling=false&"
+		wm_query = makeWalmartQuery(req)
+		if wm_query is None:
+			return {}
+		wm_url = baseurl + urllib.urlencode({'query': wm_query})
+	
+		print("wm_url:")
+		print(wm_url)
+	
+		result = urllib.urlopen(wm_url).read()
+		data = json.loads(result)
+		res = makeWmWebhookResult(data)
 		return res
 		
 	else:
