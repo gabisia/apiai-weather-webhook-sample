@@ -138,7 +138,7 @@ def makeWmWebhookResult(data):
 
 	# print(json.dumps(item, indent=4))
 
-	speech = "I found " + item.get('name') + "at Walmart for " + item.get('price')
+	speech = "I found " + item.get('name') + " at Walmart for " + item.get('price')
 
 	print("Response:")
 	print(speech)
